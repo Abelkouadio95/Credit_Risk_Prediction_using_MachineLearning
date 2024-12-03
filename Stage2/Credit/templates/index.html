@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreditTest</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <div class="fm">
+        <h1>ACCORD DE CREDIT</h1>
+    
+         <!-- Main Input For Receiving Query to our ML btn-primary btn-block btn-large -->
+        <form action="/Credit/" method="post">
+            {% csrf_token %}
+            <input type="text" name="ch" placeholder="Credit History" required="required" />
+            <input type="text" name="m" placeholder="Married" required="required" />
+            <input type="text" name="ci" placeholder="Co-applicant-Income" required="required" />
+    
+            <button type="submit" class="btn">Prediction</button>
+        </form>
+    
+       <br>
+       <br>
+       {{ message }}
+    
+     </div>
+    
+</body>
+</html>
