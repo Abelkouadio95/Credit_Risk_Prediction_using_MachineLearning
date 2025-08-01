@@ -11,6 +11,13 @@ Cette application web permet d'évaluer l'éligibilité au crédit d'un client e
 - **Formulaire interactif** pour saisir les informations du client
 - **Prédiction en temps réel** avec niveau de confiance
 - **Design responsive** adapté à tous les appareils
+  
+## Aperçu
+<img width="960" height="540" alt="image" src="https://github.com/user-attachments/assets/9b71590e-f6a5-414c-8daf-09d2a76b9b9e" />
+<img width="960" height="540" alt="image" src="https://github.com/user-attachments/assets/5c086967-f0b1-4eaf-b807-16e08d0f387c" />
+<img width="960" height="540" alt="image" src="https://github.com/user-attachments/assets/3df23a60-2642-47b3-93f8-99e3e762f4bc" />
+
+
 
 ## Tools & Technologies
 Python
