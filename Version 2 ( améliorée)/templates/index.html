@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédiction de Risque de Crédit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .result-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .result-approved {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+        .result-denied {
+            background: linear-gradient(45deg, #dc3545, #fd7e14);
+            color: white;
+        }
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            transition: width 1s ease;
+        }
+        .header-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        .input-group-text {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px 0 0 10px;
+        }
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="main-container p-5">
+                    <!-- En-tête -->
+                    <div class="text-center mb-5">
+                        <i class="fas fa-chart-line header-icon"></i>
+                        <h1 class="display-6 fw-bold text-primary mb-3">Prédiction de Risque de Crédit</h1>
+                        <p class="lead text-muted">Entrez les informations du client pour évaluer l'éligibilité au crédit</p>
+                    </div>
+
+                    <!-- Formulaire -->
+                    <form method="POST" action="/predict" class="needs-validation" novalidate>
+                        <div class="row">
+                            <!-- Genre -->
+                            <div class="col-md-6 mb-3">
+                                <label for="gender" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-2"></i>Genre
+                                </label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="">Sélectionnez le genre</option>
+                                    <option value="Male" {% if input_data and input_data.gender == 'Male' %}selected{% endif %}>Homme</option>
+                                    <option value="Female" {% if input_data and input_data.gender == 'Female' %}selected{% endif %}>Femme</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner le genre.
+                                </div>
+                            </div>
+
+                            <!-- Statut marital -->
+                            <div class="col-md-6 mb-3">
+                                <label for="married" class="form-label fw-semibold">
+                                    <i class="fas fa-heart me-2"></i>Statut marital
+                                </label>
+                                <select class="form-select" id="married" name="married" required>
+                                    <option value="">Sélectionnez le statut</option>
+                                    <option value="Yes" {% if input_data and input_data.married == 'Yes' %}selected{% endif %}>Marié(e)</option>
+                                    <option value="No" {% if input_data and input_data.married == 'No' %}selected{% endif %}>Célibataire</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner le statut marital.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Historique de crédit -->
+                            <div class="col-md-6 mb-3">
+                                <label for="credit_history" class="form-label fw-semibold">
+                                    <i class="fas fa-history me-2"></i>Historique de crédit
+                                </label>
+                                <select class="form-select" id="credit_history" name="credit_history" required>
+                                    <option value="">Sélectionnez l'historique</option>
+                                    <option value="Yes" {% if input_data and input_data.credit_history == 'Yes' %}selected{% endif %}>Historique positif</option>
+                                    <option value="No" {% if input_data and input_data.credit_history == 'No' %}selected{% endif %}>Pas d'historique/Négatif</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner l'historique de crédit.
+                                </div>
+                            </div>
+
+                            <!-- Zone de propriété -->
+                            <div class="col-md-6 mb-4">
+                                <label for="property_area" class="form-label fw-semibold">
+                                    <i class="fas fa-home me-2"></i>Zone de propriété
+                                </label>
+                                <select class="form-select" id="property_area" name="property_area" required>
+                                    <option value="">Sélectionnez la zone</option>
+                                    <option value="Urban" {% if input_data and input_data.property_area == 'Urban' %}selected{% endif %}>Urbaine</option>
+                                    <option value="Semiurban" {% if input_data and input_data.property_area == 'Semiurban' %}selected{% endif %}>Semi-urbaine</option>
+                                    <option value="Rural" {% if input_data and input_data.property_area == 'Rural' %}selected{% endif %}>Rurale</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner la zone de propriété.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator me-2"></i>Évaluer le crédit
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Affichage des résultats -->
+                    {% if result %}
+                    <div class="mt-5">
+                        <div class="card result-card {% if 'ACCORDÉ' in result %}result-approved{% else %}result-denied{% endif %}">
+                            <div class="card-body text-center p-4">
+                                <div class="mb-3">
+                                    <i class="fas {% if 'ACCORDÉ' in result %}fa-check-circle{% else %}fa-times-circle{% endif %} fa-3x mb-3"></i>
+                                    <h2 class="card-title fw-bold">{{ result }}</h2>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p class="mb-2">Niveau de confiance : <strong>{{ confidence }}%</strong></p>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: {{ confidence }}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row text-start">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-semibold">Informations saisies :</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Genre :</strong> {{ input_data.gender }}</li>
+                                            <li><strong>Marié :</strong> {{ input_data.married }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled">
+                                            <li><strong>Historique crédit :</strong> {{ input_data.credit_history }}</li>
+                                            <li><strong>Zone :</strong> {{ input_data.property_area }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Affichage des erreurs -->
+                    {% if error %}
+                    <div class="mt-4">
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ error }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validation du formulaire Bootstrap
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+
+        // Animation de la barre de confiance
+        document.addEventListener('DOMContentLoaded', function() {
+            const confidenceFill = document.querySelector('.confidence-fill');
+            if (confidenceFill) {
+                setTimeout(() => {
+                    confidenceFill.style.width = confidenceFill.style.width;
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html> 
